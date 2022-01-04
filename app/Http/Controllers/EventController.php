@@ -3,10 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Event;
 
 class EventController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         $data = Event::latest()->paginate(5);
@@ -31,6 +37,11 @@ class EventController extends Controller
             'slug' => 'required',
         ]);
         Event::create($request->all());
+
+        $user = Auth::user();
+
+        // Send email notification
+        $user->notify(new EventCreated);
 
         return redirect()->route('events.index')->with('success', 'Event created successfully');
     }
